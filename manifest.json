@@ -2,7 +2,7 @@
     "name": "JabeeWorks | レビュー管理システム",
     "short_name": "JabeeWorks",
     "description": "レビュー管理システム",
-    "start_url": "./",
+    "start_url": "/approve/",
     "display": "standalone",
     "background_color": "#000000",
     "theme_color": "#000000",
