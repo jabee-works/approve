@@ -110,6 +110,25 @@
                             method: 'POST',
                             body: JSON.stringify({ id: 'new_' + Date.now(), title, overview, newStatus: '下書き' })
                         });
+
+                        // MacのレシーバーにWebhookを送信 (Planner即時実行)
+                        // ※ 注意: このURLは毎回トンネル起動時に書き換えるか、Cloudflare固定推奨
+                        // 現在のトンネルURLをここに入れる
+                        const WORKER_URL = "https://[YOUR-TUNNEL-URL].trycloudflare.com";
+                        try {
+                            await fetch(WORKER_URL + '/webhook', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: 'draft',
+                                    projectName: title,
+                                    secret: 'jabee_secret_2026'
+                                })
+                            });
+                        } catch (e) {
+                            console.log('Webhook send failed (Mac might be offline):', e);
+                        }
+
                         this.fetchTasks();
                     } catch (e) {
                         console.error(e);
