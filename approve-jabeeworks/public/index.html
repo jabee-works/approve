@@ -15,60 +15,56 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script>
-        function app() {
-            return {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { firebaseConfig } from './firebaseConfig.js';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('app', () => ({
                 tasks: [],
-                loading: false,
+                loading: true,
                 isModalOpen: false,
                 isNewModalOpen: false,
                 isTrashOpen: false,
                 activeTask: null,
-
-                newTask: {
-                    title: '',
-                    overview: ''
-                },
+                newTask: { title: '', overview: '' },
 
                 get filteredTasks() {
                     return this.tasks.filter(t => t.status !== '却下');
                 },
-
                 get trashTasks() {
                     return this.tasks.filter(t => t.status === '却下');
                 },
 
                 init() {
-                    this.fetchTasks();
-                    // ホーム画面からの復帰やバックグラウンドからの復帰時にリフレッシュ
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'visible') {
-                            this.fetchTasks();
-                        }
-                    });
-                    window.addEventListener('focus', () => {
-                        this.fetchTasks();
+                    console.log('Initializing Firebase Listener...');
+                    // リアルタイムリスナー設定
+                    const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
+                    onSnapshot(q, (snapshot) => {
+                        this.tasks = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data(),
+                            // FirestoreのTimestampを日付文字列に変換
+                            deadline: doc.data().deadline ? doc.data().deadline : '',
+                            createdAt: doc.data().createdAt?.toDate().toLocaleString()
+                        }));
+                        this.loading = false;
+                    }, (error) => {
+                        console.error("Firestore Error:", error);
+                        this.loading = false;
                     });
                 },
 
-                async fetchTasks() {
-                    this.loading = true;
-                    try {
-                        const response = await fetch('/api/getTasks');
-                        if (!response.ok) throw new Error('Fetch failed');
-                        this.tasks = await response.json();
-                    } catch (e) {
-                        console.error(e);
-                    } finally {
-                        this.loading = false;
-                    }
-                },
+                // fetchTasks は不要になる（自動更新されるため）
+                fetchTasks() { },
 
                 openModal(task) {
                     this.activeTask = JSON.parse(JSON.stringify(task));
-                    if (!this.activeTask.feedbackComment) {
-                        this.activeTask.feedbackComment = '';
-                    }
+                    if (!this.activeTask.feedbackComment) this.activeTask.feedbackComment = '';
                     this.isModalOpen = true;
                 },
 
@@ -82,6 +78,7 @@
                     const taskId = this.activeTask.id;
                     const comment = this.activeTask.feedbackComment;
 
+                    // UI即時反映 (リスナーがくる前のごまかし)
                     const listIndex = this.tasks.findIndex(t => t.id === taskId);
                     if (listIndex !== -1) {
                         this.tasks[listIndex].status = newStatus;
@@ -90,15 +87,15 @@
                     this.closeModal();
 
                     try {
-                        await fetch('/api/updateStatus', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ pageId: taskId, newStatusName: newStatus, comment: comment })
+                        const ref = doc(db, "tasks", taskId);
+                        await updateDoc(ref, {
+                            status: newStatus,
+                            feedbackComment: comment,
+                            updatedAt: serverTimestamp()
                         });
                     } catch (e) {
-                        console.error(e);
+                        console.error("Update failed:", e);
                         alert('更新に失敗しました');
-                        this.fetchTasks();
                     }
                 },
 
@@ -106,40 +103,27 @@
                     const title = this.newTask.title;
                     const overview = this.newTask.overview;
 
-                    const tempId = 'temp_' + Date.now();
-                    this.tasks.unshift({
-                        id: tempId,
-                        title: title || '（無題）',
-                        overview: overview,
-                        status: '下書き',
-                        deadline: '',
-                        feedbackComment: ''
-                    });
-
                     this.isNewModalOpen = false;
-                    const oldTitle = this.newTask.title;
-                    const oldOverview = this.newTask.overview;
                     this.newTask.title = '';
                     this.newTask.overview = '';
 
                     try {
-                        const response = await fetch('/api/addTask', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ title, overview })
+                        await addDoc(collection(db, "tasks"), {
+                            title: title || '（無題）',
+                            overview: overview,
+                            status: '下書き', // AIトリガー用ステータス
+                            difficulty: '★',  // 初期値
+                            createdAt: serverTimestamp(),
+                            updatedAt: serverTimestamp()
                         });
-                        if (!response.ok) throw new Error('Create failed');
-                        this.fetchTasks();
+                        // 成功時のフェッチは不要（リスナーが拾う）
                     } catch (e) {
-                        console.error(e);
+                        console.error("Create failed:", e);
                         alert('作成に失敗しました');
-                        this.newTask.title = oldTitle;
-                        this.newTask.overview = oldOverview;
-                        this.fetchTasks();
                     }
                 }
-            }
-        }
+            }));
+        });
     </script>
 
     <!-- Alpine.js -->
