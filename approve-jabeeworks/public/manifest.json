@@ -1,0 +1,21 @@
+{
+    "name": "JabeeWorks | レビュー管理システム",
+    "short_name": "JabeeWorks",
+    "description": "レビュー管理システム",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

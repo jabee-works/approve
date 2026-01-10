@@ -1,0 +1,9 @@
+{
+    "name": "approve-jabeeworks",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "node-fetch": "^2.7.0"
+    }
+}
