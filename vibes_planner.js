@@ -368,8 +368,18 @@ async function processDevelopmentStart(taskId, task) {
     const commandFile = path.join(projectDir, 'start_aider.command');
     const scriptContent = `#!/bin/zsh
 export PATH=$PATH:/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin
-cd "$(dirname "$0")"
-echo "🚀 Starting Aider for ${title}..."
+TARGET_DIR=$(cd "$(dirname "$0")" && pwd)
+cd "$TARGET_DIR"
+
+# Aiderが親ディレクトリのgitに惑わされないよう、ここでgit initする
+if [ ! -d ".git" ]; then
+    echo "Initializing git repository for project..."
+    git init
+    git add .
+    git commit -m "Initial commit"
+fi
+
+echo "🚀 Starting Aider for ${title} in $TARGET_DIR..."
 echo "Waiting for 3 seconds..."
 sleep 3
 # Geminiモデルを指定して起動 (SPEC.mdを読み込み、初期指示を自動投入)
