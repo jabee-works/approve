@@ -44,7 +44,7 @@ async function unlockStuckTasks() {
 unlockStuckTasks().then(() => {
     console.log("Listening for: '下書き' -> 企画生成, 'FBあり' -> 修正, '承認' -> プロジェクト作成, '開発中' -> Aider起動");
 
-    tasksRef.where('status', 'in', ['下書き', 'FBあり', '承認', '開発中'])
+    tasksRef.where('status', 'in', ['下書き', 'FBあり', '承認', '開発中', '却下'])
         .onSnapshot(snapshot => {
             snapshot.docChanges().forEach(async (change) => {
                 if (change.type === 'added' || change.type === 'modified') {
@@ -71,6 +71,8 @@ unlockStuckTasks().then(() => {
                             await processApproval(taskId, task);
                         } else if (task.status === '開発中') {
                             await processDevelopmentStart(taskId, task);
+                        } else if (task.status === '却下') {
+                            await processRejection(taskId, task);
                         }
                     } catch (e) {
                         console.error(`Error processing task ${taskId}:`, e);
@@ -384,6 +386,41 @@ aider --architect --model gemini/gemini-1.5-pro-latest SPEC.md --message "SPEC.m
         status: 'Aider起動済',
         isProcessing: false,
         updatedAt: FieldValue.serverTimestamp()
+    });
+}
+
+
+// ---------------------------------------------------------
+// 5. 却下時のクリーンアップ
+// ---------------------------------------------------------
+async function processRejection(taskId, task) {
+    const title = task.title || 'Untitled';
+    console.log(`🗑 Cleanup process started for: ${title}`);
+
+    // ディレクトリ名がある場合のみ削除を実施
+    if (task.directoryName) {
+        const projectsDir = path.join(__dirname, 'projects');
+        const projectDir = path.join(projectsDir, task.directoryName);
+
+        if (fs.existsSync(projectDir)) {
+            console.log(`Removing project directory: ${projectDir}`);
+            try {
+                fs.rmSync(projectDir, { recursive: true, force: true });
+                console.log(`✅ Directory deleted.`);
+            } catch (e) {
+                console.error(`Failed to delete directory: ${e.message}`);
+            }
+        } else {
+            console.log(`Directory not found (already deleted?): ${projectDir}`);
+        }
+    } else {
+        console.log(`No directory linked to this task. Skipping file deletion.`);
+    }
+
+    // ロック解除
+    await tasksRef.doc(taskId).update({
+        isProcessing: false,
+        // cleanupDone: true // 必要ならフラグを立てるが、今回はisProcessing解除のみで十分
     });
 }
 
