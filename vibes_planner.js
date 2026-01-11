@@ -371,7 +371,7 @@ echo "🚀 Starting Aider for ${title}..."
 echo "Waiting for 3 seconds..."
 sleep 3
 # Geminiモデルを指定して起動 (SPEC.mdを読み込み、初期指示を自動投入)
-aider --architect --model gemini/gemini-1.5-pro-latest SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+aider --architect --model gemini/gemini-1.5-flash SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 `;
 
     fs.writeFileSync(commandFile, scriptContent, { mode: 0o755 });
