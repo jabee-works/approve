@@ -12,6 +12,13 @@
     ],
     "routes": [
         {
+            "src": "/manifest.json",
+            "headers": {
+                "Cache-Control": "public, max-age=0, must-revalidate"
+            },
+            "dest": "/public/manifest.json"
+        },
+        {
             "src": "/api/(.*)",
             "dest": "/api/$1.js"
         },
