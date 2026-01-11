@@ -5,3 +5,4 @@ approve-52d44-firebase-adminsdk-fbsvc-df3ef8c773.json
 node_modules/
 .DS_Store
 node_modules
+.aider*

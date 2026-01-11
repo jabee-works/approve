@@ -185,10 +185,16 @@
             color: #e0e7ff;
         }
 
+        .st-Aider起動済 {
+            background-color: #0f766e;
+            color: #ccfbf1;
+        }
+
         .st-実装完了/レビュー中 {
             background-color: #4c1d95;
             color: #ede9fe;
         }
+
 
         .st-アプリ修正 {
             background-color: #7c2d12;
@@ -355,13 +361,13 @@
             <div
                 class="absolute bottom-0 w-full bg-gray-900/95 backdrop-blur border-t border-gray-800 p-4 pb-8 sm:pb-4 flex gap-3 z-20">
                 <button
-                    x-show="activeTask && ['下書き', '新着', 'FBあり', '修正済', '承認', '設計完了', 'アプリ修正'].includes(activeTask.status)"
+                    x-show="activeTask && ['下書き', '新着', 'FBあり', '修正済', '承認', '設計完了', 'アプリ修正', 'Aider起動済'].includes(activeTask.status)"
                     @click="updateStatus('却下')"
                     class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-900/30 transition text-sm active:scale-95">✕
                     却下</button>
 
-                <!-- 新着 / 修正済 / 承認 / 設計完了: FBありボタンを表示 -->
-                <button x-show="activeTask && ['新着', '修正済', '承認', '設計完了'].includes(activeTask.status)"
+                <!-- 新着 / 修正済 / 承認: FBありボタンを表示 -->
+                <button x-show="activeTask && ['新着', '修正済', '承認'].includes(activeTask.status)"
                     @click="updateStatus('FBあり')"
                     class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-amber-900/30 transition text-sm active:scale-95">💬
                     FBあり</button>
@@ -370,6 +376,11 @@
                 <button x-show="activeTask && ['新着', '修正済'].includes(activeTask.status)" @click="updateStatus('承認')"
                     class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-green-900/30 transition text-sm active:scale-95">✓
                     承認</button>
+
+                <!-- 設計完了: 開発開始ボタン (Aider起動) -->
+                <button x-show="activeTask && activeTask.status === '設計完了'" @click="updateStatus('開発中')"
+                    class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-purple-900/30 transition text-sm active:scale-95">💻
+                    開発開始</button>
 
                 <!-- 却下: 新着ボタンを表示 -->
                 <button x-show="activeTask && activeTask.status === '却下'" @click="updateStatus('新着')"
