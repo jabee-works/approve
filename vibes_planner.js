@@ -53,6 +53,8 @@ unlockStuckTasks().then(() => {
 
                     if (task.isProcessing) return;
 
+                    if (task.status === '却下' && task.cleanupDone) return;
+
                     console.log(`Detected: [${task.status}] ${task.title || 'Untitled'}`);
 
                     try {
@@ -371,7 +373,7 @@ echo "🚀 Starting Aider for ${title}..."
 echo "Waiting for 3 seconds..."
 sleep 3
 # Geminiモデルを指定して起動 (SPEC.mdを読み込み、初期指示を自動投入)
-aider --architect --model gemini/gemini-2.5-flash SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+aider --architect --yes --model gemini/gemini-2.5-flash SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 `;
 
     fs.writeFileSync(commandFile, scriptContent, { mode: 0o755 });
@@ -417,10 +419,10 @@ async function processRejection(taskId, task) {
         console.log(`No directory linked to this task. Skipping file deletion.`);
     }
 
-    // ロック解除
+    // ロック解除 & クリーンアップ完了フラグ設定
     await tasksRef.doc(taskId).update({
         isProcessing: false,
-        // cleanupDone: true // 必要ならフラグを立てるが、今回はisProcessing解除のみで十分
+        cleanupDone: true
     });
 }
 
