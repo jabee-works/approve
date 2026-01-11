@@ -32,6 +32,7 @@
                 isTrashOpen: false,
                 activeTask: null,
                 newTask: { title: '', overview: '' },
+                errorMsg: null,
 
                 get filteredTasks() {
                     return this.tasks.filter(t => t.status !== '却下');
@@ -42,19 +43,18 @@
 
                 init() {
                     console.log('Initializing Firebase Listener...');
-                    // リアルタイムリスナー設定
                     const q = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
                     onSnapshot(q, (snapshot) => {
                         this.tasks = snapshot.docs.map(doc => ({
                             id: doc.id,
                             ...doc.data(),
-                            // FirestoreのTimestampを日付文字列に変換
                             deadline: doc.data().deadline ? doc.data().deadline : '',
                             createdAt: doc.data().createdAt?.toDate().toLocaleString()
                         }));
                         this.loading = false;
                     }, (error) => {
                         console.error("Firestore Error:", error);
+                        this.errorMsg = `読み込みエラー: ${error.message}`;
                         this.loading = false;
                     });
                 },
@@ -95,7 +95,8 @@
                         });
                     } catch (e) {
                         console.error("Update failed:", e);
-                        alert('更新に失敗しました');
+                        alert(`更新エラー: ${e.message}`);
+                        // ロールバックなどを検討すべきだが簡易的にアラートのみ
                     }
                 },
 
@@ -116,10 +117,10 @@
                             createdAt: serverTimestamp(),
                             updatedAt: serverTimestamp()
                         });
-                        // 成功時のフェッチは不要（リスナーが拾う）
                     } catch (e) {
                         console.error("Create failed:", e);
-                        alert('作成に失敗しました');
+                        alert(`作成エラー: ${e.message}\n(詳細: Consoleを確認してください)`);
+                        this.errorMsg = `作成失敗: ${e.message}`;
                     }
                 }
             }));
@@ -239,6 +240,22 @@
                 </path>
             </svg>
         </button>
+    </div>
+
+    <!-- エラーメッセージ表示 -->
+    <div x-show="errorMsg" x-transition class="fixed top-20 left-0 w-full z-50 px-4" style="display: none;">
+        <div
+            class="bg-red-900/90 border border-red-500 text-red-100 px-4 py-3 rounded-lg shadow-lg flex justify-between items-center max-w-md mx-auto">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                </svg>
+                <span class="text-sm font-bold" x-text="errorMsg"></span>
+            </div>
+            <button @click="errorMsg = null" class="ml-4 hover:text-white">✕</button>
+        </div>
     </div>
 
     <!-- リストエリア -->
