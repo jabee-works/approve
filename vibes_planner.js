@@ -388,6 +388,30 @@ echo "Waiting for 3 seconds..."
 sleep 3
 # OpenRouter (Qwen2.5-Coder) を指定して起動
 aider --architect --yes --model openrouter/qwen/qwen-2.5-coder-32b-instruct SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+
+echo "✅ Aider finished. Updating status to '実装完了/レビュー中'..."
+# ステータス自動更新 (Firebase Admin SDKにて直接書き換え)
+cd "$TARGET_DIR/../.."
+node -e "
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const sa = require('./serviceAccountKey.json');
+try {
+  initializeApp({ credential: cert(sa) });
+  const db = getFirestore();
+  db.collection('tasks').doc('${taskId}').update({
+    status: '実装完了/レビュー中',
+    updatedAt: FieldValue.serverTimestamp()
+  }).then(() => {
+    console.log('Status updated successfully.');
+    process.exit(0);
+  }).catch(e => {
+    console.error('Failed to update status:', e);
+    process.exit(1);
+  });
+} catch(e) { console.error(e); process.exit(1); }
+"
+echo "Done. You can close this window."
 `;
 
     fs.writeFileSync(commandFile, scriptContent, { mode: 0o755 });
