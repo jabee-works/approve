@@ -383,11 +383,17 @@
 
             <div
                 class="absolute bottom-0 w-full bg-gray-900/95 backdrop-blur border-t border-gray-800 p-4 pb-8 sm:pb-4 flex gap-3 z-20">
+                <!-- 通常の却下ボタン (設計完了以外) -->
                 <button
-                    x-show="activeTask && ['下書き', '新着', 'FBあり', '修正済', '承認', '設計完了', 'アプリ修正', 'Aider起動済'].includes(activeTask.status)"
+                    x-show="activeTask && ['下書き', '新着', 'FBあり', '修正済', '承認', 'アプリ修正', 'Aider起動済'].includes(activeTask.status)"
                     @click="updateStatus('却下')"
                     class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-900/30 transition text-sm active:scale-95">✕
                     却下</button>
+
+                <!-- 設計完了: 完了(アーカイブ)ボタン (機能は却下＝削除と同じ) -->
+                <button x-show="activeTask && activeTask.status === '設計完了'" @click="updateStatus('却下')"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-900/30 transition text-sm active:scale-95">📁
+                    完了 (アーカイブ)</button>
 
                 <!-- 新着 / 修正済 / 承認 / 設計完了: FBありボタンを表示 -->
                 <button x-show="activeTask && ['新着', '修正済', '承認', '設計完了'].includes(activeTask.status)"
