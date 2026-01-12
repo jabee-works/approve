@@ -410,7 +410,7 @@ if flutter build web --release; then
     
     # Start Cloudflare Tunnel
     echo "🚀 Launching Cloudflare Tunnel..."
-    TUNNEL_LOG="/tmp/jabeeworks_tunnel_${PORT}.log"
+    TUNNEL_LOG="/tmp/jabeeworks_tunnel_\${PORT}.log"
     rm -f "$TUNNEL_LOG"
     nohup cloudflared tunnel --url http://localhost:$PORT > "$TUNNEL_LOG" 2>&1 &
     
