@@ -387,7 +387,7 @@ echo "🚀 Starting Aider for ${title} in $TARGET_DIR..."
 echo "Waiting for 3 seconds..."
 sleep 3
 # ローカルOllama (Qwen2.5-Coder) を指定して起動
-aider --architect --yes --no-stream --model ollama/qwen2.5-coder:32b SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+aider --architect --yes --no-stream --model ollama/qwen2.5-coder:7b SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 
 # ------------------------------------------------------------------
 # Web Build & Preview Deployment
