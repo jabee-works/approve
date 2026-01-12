@@ -111,7 +111,7 @@ function runGeminiAsync(prompt) {
         // Aプラン: shell: false で配列として渡す (これが一番安全で標準的)
         // これならクォートのエスケープ地獄から解放される。
 
-        const child = spawn('gemini', [prompt, '--model', 'gemini-1.5-flash', '--output-format', 'text'], {
+        const child = spawn('gemini', [prompt, '--model', 'gemini-2.5-flash', '--output-format', 'text'], {
             shell: false
         });
 
