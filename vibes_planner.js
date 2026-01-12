@@ -366,8 +366,12 @@ async function processDevelopmentStart(taskId, task) {
 
     // Aider起動用スクリプト(.command)を作成
     const commandFile = path.join(projectDir, 'start_aider.command');
+    const openRouterKey = process.env.OPENROUTER_API_KEY || '';
+
     const scriptContent = `#!/bin/zsh
 export PATH=$PATH:/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin
+export OPENROUTER_API_KEY="${openRouterKey}"
+
 TARGET_DIR=$(cd "$(dirname "$0")" && pwd)
 cd "$TARGET_DIR"
 
@@ -382,8 +386,8 @@ fi
 echo "🚀 Starting Aider for ${title} in $TARGET_DIR..."
 echo "Waiting for 3 seconds..."
 sleep 3
-# Geminiモデルを指定して起動 (SPEC.mdを読み込み、初期指示を自動投入)
-aider --architect --yes --model gemini/gemini-2.5-flash SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+# OpenRouter (Qwen2.5-Coder) を指定して起動
+aider --architect --yes --model openrouter/qwen/qwen-2.5-coder-32b-instruct SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 `;
 
     fs.writeFileSync(commandFile, scriptContent, { mode: 0o755 });
