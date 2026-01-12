@@ -386,8 +386,8 @@ fi
 echo "🚀 Starting Aider for ${title} in $TARGET_DIR..."
 echo "Waiting for 3 seconds..."
 sleep 3
-# OpenRouter (Qwen2.5-Coder) を指定して起動
-aider --architect --yes --no-stream --model openrouter/qwen/qwen-2.5-coder-32b-instruct SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+# ローカルOllama (Qwen2.5-Coder) を指定して起動
+aider --architect --yes --no-stream --model ollama/qwen2.5-coder:32b SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 
 # ------------------------------------------------------------------
 # Web Build & Preview Deployment
@@ -410,15 +410,16 @@ if flutter build web --release; then
     
     # Start Cloudflare Tunnel
     echo "🚀 Launching Cloudflare Tunnel..."
-    rm -f ../../tunnel.log
-    nohup cloudflared tunnel --url http://localhost:$PORT > ../../tunnel.log 2>&1 &
+    TUNNEL_LOG="/tmp/jabeeworks_tunnel_${PORT}.log"
+    rm -f "$TUNNEL_LOG"
+    nohup cloudflared tunnel --url http://localhost:$PORT > "$TUNNEL_LOG" 2>&1 &
     
     # Wait for URL
     echo "Waiting for Tunnel URL..."
     URL=""
     for i in {1..20}; do
-        if grep -q "trycloudflare.com" ../../tunnel.log; then
-            URL=$(grep -o 'https://[^ ]*\.trycloudflare.com' ../../tunnel.log | head -n 1)
+        if grep -q "trycloudflare.com" "$TUNNEL_LOG"; then
+            URL=$(grep -o 'https://[^ ]*\.trycloudflare.com' "$TUNNEL_LOG" | head -n 1)
             break
         fi
         sleep 2
