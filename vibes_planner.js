@@ -393,6 +393,9 @@ aider --architect --yes --no-stream --model openrouter/qwen/qwen-2.5-coder-32b-i
 # Web Build & Preview Deployment
 # ------------------------------------------------------------------
 echo "🏗 Building Flutter for Web (Release)..."
+# Ensure Web platform is enabled
+flutter create . --platforms web
+
 if flutter build web --release; then
     echo "✅ Build Success."
     
