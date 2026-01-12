@@ -387,7 +387,7 @@ echo "🚀 Starting Aider for ${title} in $TARGET_DIR..."
 echo "Waiting for 3 seconds..."
 sleep 3
 # OpenRouter (Qwen2.5-Coder) を指定して起動
-aider --architect --yes --model openrouter/qwen/qwen-2.5-coder-32b-instruct SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+aider --architect --yes --no-stream --model openrouter/qwen/qwen-2.5-coder-32b-instruct SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 
 # ------------------------------------------------------------------
 # Web Build & Preview Deployment
