@@ -454,9 +454,39 @@ if flutter build web --release; then
         exit 0
     else
         echo "❌ Failed to get Tunnel URL."
+        # Tunnel Error -> Revert to '設計完了'
+        cd "$TARGET_DIR/../.."
+        node -e "
+            const { initializeApp, cert } = require('firebase-admin/app');
+            const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+            const sa = require('./serviceAccountKey.json');
+            try {
+              initializeApp({ credential: cert(sa) });
+              const db = getFirestore();
+              db.collection('tasks').doc('${taskId}').update({
+                status: '設計完了',
+                updatedAt: FieldValue.serverTimestamp()
+              }).then(() => process.exit(0)).catch(() => process.exit(1));
+            } catch(e) { process.exit(1); }
+        "
     fi
 else
     echo "❌ Flutter Build Failed."
+    # Build Error -> Revert to '設計完了'
+    cd "$TARGET_DIR/../.."
+    node -e "
+        const { initializeApp, cert } = require('firebase-admin/app');
+        const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+        const sa = require('./serviceAccountKey.json');
+        try {
+          initializeApp({ credential: cert(sa) });
+          const db = getFirestore();
+          db.collection('tasks').doc('${taskId}').update({
+            status: '設計完了',
+            updatedAt: FieldValue.serverTimestamp()
+          }).then(() => process.exit(0)).catch(() => process.exit(1));
+        } catch(e) { process.exit(1); }
+    "
 fi
 
 # エラー時は閉じない
