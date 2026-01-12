@@ -4,6 +4,10 @@ const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const { Client } = require('@notionhq/client');
+
+const notion = process.env.NOTION_API_KEY ? new Client({ auth: process.env.NOTION_API_KEY }) : null;
+const NOTION_DB_ID = process.env.NOTION_DATABASE_ID;
 
 // サービスアカウントキーの読み込み
 const serviceAccount = require('./serviceAccountKey.json');
