@@ -389,29 +389,78 @@ sleep 3
 # OpenRouter (Qwen2.5-Coder) を指定して起動
 aider --architect --yes --model openrouter/qwen/qwen-2.5-coder-32b-instruct SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 
-echo "✅ Aider finished. Updating status to '実装完了/レビュー中'..."
-# ステータス自動更新 (Firebase Admin SDKにて直接書き換え)
-cd "$TARGET_DIR/../.."
-node -e "
-const { initializeApp, cert } = require('firebase-admin/app');
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const sa = require('./serviceAccountKey.json');
-try {
-  initializeApp({ credential: cert(sa) });
-  const db = getFirestore();
-  db.collection('tasks').doc('${taskId}').update({
-    status: '実装完了/レビュー中',
-    updatedAt: FieldValue.serverTimestamp()
-  }).then(() => {
-    console.log('Status updated successfully.');
-    process.exit(0);
-  }).catch(e => {
-    console.error('Failed to update status:', e);
-    process.exit(1);
-  });
-} catch(e) { console.error(e); process.exit(1); }
-"
-echo "Done. You can close this window."
+# ------------------------------------------------------------------
+# Web Build & Preview Deployment
+# ------------------------------------------------------------------
+echo "🏗 Building Flutter for Web (Release)..."
+if flutter build web --release; then
+    echo "✅ Build Success."
+    
+    # Random Port (8000-8999)
+    PORT=$((8000 + RANDOM % 1000))
+    echo "🌍 Starting Preview Server on port $PORT..."
+    
+    # Start Python HTTP Server in background
+    cd build/web
+    nohup python3 -m http.server $PORT > /dev/null 2>&1 &
+    mypid=$!
+    
+    # Start Cloudflare Tunnel
+    echo "🚀 Launching Cloudflare Tunnel..."
+    rm -f ../../tunnel.log
+    nohup cloudflared tunnel --url http://localhost:$PORT > ../../tunnel.log 2>&1 &
+    
+    # Wait for URL
+    echo "Waiting for Tunnel URL..."
+    URL=""
+    for i in {1..20}; do
+        if grep -q "trycloudflare.com" ../../tunnel.log; then
+            URL=$(grep -o 'https://[^ ]*\.trycloudflare.com' ../../tunnel.log | head -n 1)
+            break
+        fi
+        sleep 2
+    done
+    
+    if [ -n "$URL" ]; then
+        echo "✅ Preview URL: $URL"
+        
+        # Update Firebase
+        cd "$TARGET_DIR/../.." # Back to workspace root for serviceAccount
+        node -e "
+            const { initializeApp, cert } = require('firebase-admin/app');
+            const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+            const sa = require('./serviceAccountKey.json');
+            try {
+              initializeApp({ credential: cert(sa) });
+              const db = getFirestore();
+              db.collection('tasks').doc('${taskId}').update({
+                status: '実装完了/レビュー中',
+                reviewUrl: '$URL',
+                updatedAt: FieldValue.serverTimestamp()
+              }).then(() => {
+                console.log('Status & URL updated successfully.');
+                process.exit(0);
+              }).catch(e => {
+                console.error('Failed to update status:', e);
+                process.exit(1);
+              });
+            } catch(e) { console.error(e); process.exit(1); }
+        "
+        
+        echo "🎉 All Done! Preview is live at: $URL"
+        echo "Closing terminal in 5 seconds..."
+        sleep 5
+        osascript -e 'tell application "Terminal" to close front window'
+        exit 0
+    else
+        echo "❌ Failed to get Tunnel URL."
+    fi
+else
+    echo "❌ Flutter Build Failed."
+fi
+
+# エラー時は閉じない
+echo "⚠️ Process finished with errors or warning. Terminal will stay open."
 `;
 
     fs.writeFileSync(commandFile, scriptContent, { mode: 0o755 });
