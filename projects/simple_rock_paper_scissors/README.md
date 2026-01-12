@@ -1,4 +1,4 @@
-# task_bridge
+# simple_rock_paper_scissors
 
 A new Flutter project.
 
