@@ -309,6 +309,9 @@ async function processApproval(taskId, task) {
     if (specContent) {
         fs.writeFileSync(path.join(projectDir, 'SPEC.md'), specContent);
         console.log(`✅ SPEC.md saved to ${projectDir}/SPEC.md`);
+
+        // Notionに保存
+        await saveToNotion(task, specContent);
     } else {
         console.error("Failed to generate SPEC.md content from Gemini.");
     }
