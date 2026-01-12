@@ -406,10 +406,7 @@
                     class="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-green-900/30 transition text-sm active:scale-95">✓
                     承認</button>
 
-                <!-- 設計完了: 開発開始ボタン (Aider起動) -->
-                <button x-show="activeTask && activeTask.status === '設計完了'" @click="updateStatus('開発中')"
-                    class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-purple-900/30 transition text-sm active:scale-95">💻
-                    開発開始</button>
+
 
                 <!-- 却下: 新着ボタンを表示 -->
                 <button x-show="activeTask && activeTask.status === '却下'" @click="updateStatus('新着')"
