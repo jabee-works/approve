@@ -570,7 +570,7 @@ async function saveToNotion(task, specContent) {
                     title: [{ text: { content: task.title || 'Untitled' } }]
                 },
                 Status: {
-                    select: { name: '設計完了' }
+                    status: { name: '設計完了' }
                 }
             },
             children: [
