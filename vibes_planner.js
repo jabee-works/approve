@@ -366,11 +366,11 @@ async function processDevelopmentStart(taskId, task) {
 
     // Aider起動用スクリプト(.command)を作成
     const commandFile = path.join(projectDir, 'start_aider.command');
-    const openRouterKey = process.env.OPENROUTER_API_KEY || '';
+    const groqKey = process.env.GROQ_API_KEY || '';
 
     const scriptContent = `#!/bin/zsh
 export PATH=$PATH:/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin
-export OPENROUTER_API_KEY="${openRouterKey}"
+export GROQ_API_KEY="${groqKey}"
 
 TARGET_DIR=$(cd "$(dirname "$0")" && pwd)
 cd "$TARGET_DIR"
@@ -386,8 +386,8 @@ fi
 echo "🚀 Starting Aider for ${title} in $TARGET_DIR..."
 echo "Waiting for 3 seconds..."
 sleep 3
-# ローカルOllama (Qwen2.5-Coder) を指定して起動
-aider --architect --yes --no-stream --model ollama/qwen2.5-coder:7b SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
+# Groq (Llama 3.1 70B) を指定して起動
+aider --architect --yes --no-stream --model groq/llama-3.1-70b-versatile SPEC.md --message "SPEC.mdの手順に従って、Step 1 から順に実装を開始してください。"
 
 # ------------------------------------------------------------------
 # Web Build & Preview Deployment
