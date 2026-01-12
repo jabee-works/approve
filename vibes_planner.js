@@ -554,3 +554,45 @@ async function processRejection(taskId, task) {
     });
 }
 
+// ---------------------------------------------------------
+// Helper: Save to Notion
+// ---------------------------------------------------------
+async function saveToNotion(task, specContent) {
+    if (!notion || !NOTION_DB_ID) {
+        console.log('Skipping Notion sync (Key or DB ID missing).');
+        return;
+    }
+    try {
+        await notion.pages.create({
+            parent: { database_id: NOTION_DB_ID },
+            properties: {
+                Name: {
+                    title: [{ text: { content: task.title || 'Untitled' } }]
+                },
+                Status: {
+                    select: { name: '設計完了' }
+                }
+            },
+            children: [
+                {
+                    object: 'block',
+                    type: 'heading_2',
+                    heading_2: { rich_text: [{ text: { content: 'SPEC.md' } }] }
+                },
+                {
+                    object: 'block',
+                    type: 'paragraph',
+                    paragraph: {
+                        rich_text: [{ text: { content: (specContent || '').substring(0, 2000) } }]
+                    }
+                }
+            ]
+        });
+        console.log('✅ Saved to Notion.');
+    } catch (error) {
+        // console.error('Failed to save to Notion:', error.body || error);
+        console.error('Failed to save to Notion (Error ignored to continue process).');
+    }
+}
+
+
