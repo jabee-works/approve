@@ -563,7 +563,7 @@ async function saveToNotion(task, specContent) {
         return;
     }
     try {
-        await notion.pages.create({
+        const response = await notion.pages.create({
             parent: { database_id: NOTION_DB_ID },
             properties: {
                 Name: {
@@ -588,7 +588,7 @@ async function saveToNotion(task, specContent) {
                 }
             ]
         });
-        console.log('✅ Saved to Notion.');
+        console.log(`✅ Saved to Notion: ${response.url}`);
     } catch (error) {
         // console.error('Failed to save to Notion:', error.body || error);
         console.error('Failed to save to Notion (Error ignored to continue process).');
