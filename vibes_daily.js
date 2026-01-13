@@ -3,6 +3,7 @@ const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { execSync } = require('child_process');
 const path = require('path');
+const { sendDiscordNotification } = require('./vibes_notifier');
 
 // サービスアカウントキーの読み込み
 const serviceAccount = require('./serviceAccountKey.json');
@@ -97,6 +98,19 @@ async function generateDailyIdeas() {
 
         await batch.commit();
         console.log('Daily ideas committed to Firestore.');
+
+        // Discord通知
+        const fields = ideas.map(idea => ({
+            name: `💡 ${idea.title} (${idea.difficulty || '★'})`,
+            value: `${idea.overview}\n**Target:** ${idea.target}\n**Monetize:** ${idea.monetization}\n**Type:** ${idea.type}`
+        }));
+
+        await sendDiscordNotification(
+            '🤖 新着アイデアが届きました！',
+            `本日（${currentMonthStr}）のトレンドに基づいたアイデアを${ideas.length}件生成しました。`,
+            0x00ff00, // Green for success/new
+            fields
+        );
 
     } catch (e) {
         console.error("JSON Parse or Firestore Error:", e);
